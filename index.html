@@ -104,19 +104,28 @@
             </tr>
             <tr>
                 <td colspan="4" class="text-left">
-                    <b>Name : </b><input type="text" value="name" />
+                    <div style="display:flex;">
+                        <b>Name : </b>
+                        <div id="pty">
+                            <select id="partySelect" onchange="fillPartyDetails()">
+                                <option value="">Select Party</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="text" id="newPartyName" placeholder="Enter new party name" style="display: none;" />
                     <br>
-                    <b>Address : </b><textarea rows="3" style="width: 100%;">address</textarea>
+                    <b>Address : </b><textarea id="address" rows="3" style="width: 100%;"></textarea>
                     <br>
-                    <b>Party GSTIN / PAN No.: </b><input type="text" value="24AVOPK6336Q1ZU" />
+                    <b>Party GSTIN / PAN No.: </b><input type="text" id="gstNo" />
                     <br>
-                    <b>State : </b><input type="text" value="Gujarat" /> <b>State Code : </b><input type="text"
-                        value="24" />
+                    <b>State : </b><input type="text" id="state" value="Gujarat" /> <b>State Code : </b><input
+                        type="text" id="stateCode" value="24" />
                 </td>
+
                 <td colspan="4" class="text-left">
-                    Invoice No.: <input type="text" value="00" /> Dt.: <input type="date" value="2024-05-20" />
+                    Invoice No.: <input type="text" value="00" /> Dt.: <input type="date" id="date" />
                     <br>
-                    Challan No.: <input type="text" value="00" /> 
+                    Challan No.: <input type="text" value="00" />
                     <br>
                     Order No.: <input type="text" value="00" />
                     <br>
@@ -174,7 +183,7 @@
             </tr>
             <tr>
                 <td colspan="4" rowspan="2" class="text-left">
-                    <b>Rupees :</b> <input type="text" id="totalInWords" style="width: 100%;"/>
+                    <b>Rupees :</b> <input type="text" id="totalInWords" style="width: 100%;" />
                 </td>
                 <td colspan="2">ADD IGST @ 0%</td>
                 <td colspan="2"><input type="text" id="igstAmount" readonly /></td>
@@ -202,12 +211,68 @@
                     Authorised Signatory
                 </td>
             </tr>
-            
+
         </table>
         <button type="button" class="print-btn" onclick="window.print()">Print</button>
     </form>
 
     <script>
+        const parties = {
+            "Jai Shreenath Enterprise": {
+                address: "PLOT No.6137/A, 4TH PHASE, G.I.D.C, VAPI-396195.",
+                gstNo: "24AVOPK6336Q1ZU"
+            },
+            "S.K. TRADERS": {
+                address: "Block No. 27, Plot No. 32, Ekta Nagar, Dungri Faliya, Dungra, Via - Vapi, Dist. Valsad(Gujarat).",
+                gstNo: "21AVVPK8435D1ZA"
+            },
+            "M.S. TRADERS": {
+                address: "HOuse No. 892, Godown No. 1, Millat Nagar, Akta Nagar, Dungri Falia, Dungra, Vapi, Valsad, Gujarat.",
+                gstNo: "24ELFPS8797Q1ZQ"
+            },
+            "GOLDEN PLASTIC": {
+                address: "P4, Ekta Nagar, Dungri, Faliya, Dungra, Vapi 396191",
+                gstNo: "24ALHPK1605P1Z1"
+            },
+            "new": {
+            }
+        };
+
+        const selectElement = document.getElementById('partySelect');
+
+        // Create an option for each party
+        for (const partyId in parties) {
+            const option = document.createElement('option');
+            option.value = partyId;
+            option.text = partyId; // You can customize the text as needed
+            selectElement.appendChild(option);
+        }
+
+
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+
+
+        function fillPartyDetails() {
+            const partySelect = document.getElementById('partySelect').value;
+            const pty = document.getElementById('pty');
+            const address = document.getElementById('address');
+            const gstNo = document.getElementById('gstNo');
+
+            if (partySelect === "new") {
+                document.getElementById('partySelect').style.display = 'none';
+                pty.innerHTML = `<input type="text" id="newPartyName" placeholder="Enter new party name"/>`
+                address.value = "";
+                gstNo.value = "";
+            } else if (parties[partySelect]) {
+                address.value = parties[partySelect].address;
+                gstNo.value = parties[partySelect].gstNo;
+            } else {
+                address.value = "";
+                gstNo.value = "";
+            }
+        }
+
         function addProduct() {
             const productTable = document.getElementById('productTable');
             const newRow = document.createElement('tr');
@@ -254,18 +319,31 @@
             document.getElementById('totalInWords').value = numberToWords(grandTotal);
         }
 
-        var a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+        var a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen'];
         var b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
 
         function numberToWords(num) {
             if ((num = num.toString()).length > 9) return 'overflow';
-            n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-            if (!n) return; var str = '';
-            str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
-            str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
-            str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
-            str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
-            str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'rupees only ' : '';
+
+            let parts = num.split('.'); // Split the number into integer and decimal parts
+
+            // Handle the integer part
+            let intPart = ('000000000' + parts[0]).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+            let str = '';
+            str += (intPart[1] != 0) ? (a[Number(intPart[1])] || b[intPart[1][0]] + ' ' + a[intPart[1][1]]) + 'crore ' : '';
+            str += (intPart[2] != 0) ? (a[Number(intPart[2])] || b[intPart[2][0]] + ' ' + a[intPart[2][1]]) + 'lakh ' : '';
+            str += (intPart[3] != 0) ? (a[Number(intPart[3])] || b[intPart[3][0]] + ' ' + a[intPart[3][1]]) + 'thousand ' : '';
+            str += (intPart[4] != 0) ? (a[Number(intPart[4])] || b[intPart[4][0]] + ' ' + a[intPart[4][1]]) + 'hundred ' : '';
+            str += (intPart[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(intPart[5])] || b[intPart[5][0]] + ' ' + a[intPart[5][1]]) + 'rupees ' : '';
+
+            // Handle the decimal part
+            if (parts[1]) {
+                let decimalPart = parts[1].substr(0, 2);
+                str += 'and ' + a[Number(decimalPart)] + ' paise only';
+            } else {
+                str += 'only';
+            }
+
             return str.toUpperCase();
         }
 
